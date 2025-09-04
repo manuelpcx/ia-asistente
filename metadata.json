@@ -1,0 +1,7 @@
+{
+  "name": "AI Calendar Assistant",
+  "description": "An AI-powered assistant to schedule appointments in your Google Calendar via a WhatsApp-like interface. Includes a personal dashboard to track your scheduling activity.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
