@@ -58,7 +58,11 @@ export const getAppointmentDetailsFromText = async (prompt: string): Promise<App
     return parsedJson as AppointmentDetails;
   } catch (error) {
     console.error("Error calling Gemini API:", error);
-    // Provide a user-friendly error message without exposing internal details.
+    const errorMessage = String(error);
+    if (errorMessage.includes("API key not valid") || errorMessage.includes("API_KEY_INVALID")) {
+        return { error: "It seems there's an issue with the API key configuration. Please ensure it's set up correctly by the application administrator." };
+    }
+    // Provide a user-friendly error message for other cases.
     return { error: "I'm having a bit of trouble connecting to my brain right now. Please try again in a moment." };
   }
 };

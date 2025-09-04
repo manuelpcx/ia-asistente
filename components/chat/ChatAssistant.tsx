@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChatMessage, Appointment, AppointmentDetails } from '../../types';
 import ChatMessageBubble from './ChatMessageBubble';
@@ -54,7 +55,10 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ onScheduleAppointment }) 
             await onScheduleAppointment(newAppointment);
             addAiMessage(`Great! I've added "${details.title}" to your Google Calendar for ${details.date} at ${details.time}.`);
         } catch (error) {
-            addAiMessage("Sorry, I couldn't schedule the appointment in your calendar. Please make sure I have the right permissions and try again.");
+            const errorMessage = error instanceof Error 
+                ? error.message 
+                : "Sorry, I couldn't schedule the appointment. An unknown error occurred.";
+            addAiMessage(errorMessage);
         }
     } else if (details.clarificationQuestion) {
         addAiMessage(details.clarificationQuestion);

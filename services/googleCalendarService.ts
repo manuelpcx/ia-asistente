@@ -1,3 +1,4 @@
+
 import { Appointment } from '../types';
 
 const CALENDAR_API_URL = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
@@ -41,7 +42,11 @@ export const listUpcomingEvents = async (accessToken: string): Promise<Appointme
     );
 
     if (!response.ok) {
-        throw new Error('Failed to fetch calendar events.');
+        const errorData = await response.json().catch(() => ({ error: { message: 'Failed to parse error response from Google Calendar API.' } }));
+        const message = errorData.error?.message || 'Failed to fetch calendar events.';
+        const error: any = new Error(message);
+        error.status = response.status;
+        throw error;
     }
 
     const data = await response.json();
@@ -83,9 +88,11 @@ export const createCalendarEvent = async (
     });
 
     if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Google Calendar API Error:", errorData);
-        throw new Error('Failed to create calendar event.');
+        const errorData = await response.json().catch(() => ({ error: { message: 'Failed to parse error response from Google Calendar API.' } }));
+        const message = errorData.error?.message || 'Failed to create calendar event.';
+        const error: any = new Error(message);
+        error.status = response.status;
+        throw error;
     }
 
     const createdEvent = await response.json();

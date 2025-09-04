@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { User, Appointment } from '../../types';
 import Header from '../shared/Header';
@@ -22,8 +23,12 @@ const MainScreen: React.FC<MainScreenProps> = ({ user, accessToken, onLogout }) 
     try {
       const events = await listUpcomingEvents(accessToken);
       setAppointments(events);
-    } catch (err) {
-      setError('Failed to load your calendar. Please try refreshing the page.');
+    } catch (err: any) {
+      if (err.status === 401 || err.status === 403) {
+        setError('Calendar access denied or expired. Please log out and sign in again to re-authorize.');
+      } else {
+        setError('Failed to load your calendar. Please try refreshing the page.');
+      }
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -41,11 +46,12 @@ const MainScreen: React.FC<MainScreenProps> = ({ user, accessToken, onLogout }) 
         setAppointments(prev => 
             [...prev, newEvent].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         );
-    } catch (error) {
+    } catch (error: any) {
         console.error("Failed to schedule appointment:", error);
-        // Optionally, inform the user in the chat that scheduling failed.
-        // This would require passing a callback down to the ChatAssistant.
-        throw error; // re-throw to be caught in ChatAssistant
+        if (error.status === 401 || error.status === 403) {
+            throw new Error("I couldn't access your calendar to schedule this. Your session may have expired. Please try logging out and signing in again.");
+        }
+        throw new Error(error.message || "Sorry, an unexpected error occurred while trying to schedule the appointment.");
     }
   }, [accessToken]);
   
@@ -54,7 +60,7 @@ const MainScreen: React.FC<MainScreenProps> = ({ user, accessToken, onLogout }) 
       return <div className="flex items-center justify-center h-full"><p className="text-slate-400 text-lg">Loading your calendar...</p></div>;
     }
     if (error) {
-      return <div className="flex items-center justify-center h-full"><p className="text-red-400 text-lg">{error}</p></div>;
+      return <div className="flex items-center justify-center h-full text-center p-4"><p className="text-red-400 text-lg">{error}</p></div>;
     }
     return <Dashboard appointments={appointments} />;
   };
